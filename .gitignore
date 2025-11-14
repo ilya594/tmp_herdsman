@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+dist
+public
+package-lock.json
+cert/cert.pem
+cert/csr.pem
+cert/key.pem
+start.lnk
