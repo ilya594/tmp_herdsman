@@ -1,18 +1,9 @@
 
 import { Application, Assets, Container, Graphics, Sprite } from 'pixi.js';
 import {  GameConfig, replaceConfig } from '../config/Config';
-import { IGlobalPosition, IFieldPosition, IDynamicGameObject, ICell, IDynamicGameObjectType } from '../common';
-import PathFinder from '../core/PathFinder';
-
-
-import Endpoint from '../core/Endpoint';
-import GameField from '../core/FieldData';
-import UIComponents from './UIComponents';
-import Events from '../core/GameEvents';
 import { Minion } from '../core/Minion';
 import GameEvents from '../core/GameEvents';
-import { MinionFabric } from '../core/MinionFabric';
-import Game from '../core/Game';
+
 
 interface IRendererConfig {
     FIELD_WIDTH: number;

@@ -3,7 +3,7 @@ import { IFieldPosition, IGameRenderer } from "../common";
 import { GameConfig } from "../config/Config";
 import UIComponents from "../view/UIComponents";
 import { Dude } from "./Dude";
-import Endpoint from "./Endpoint";
+import { Pointer } from "./Pointer";
 import Field from "./Field";
 import GameEvents from "./GameEvents";
 import GameField, { FieldData } from "./FieldData";
@@ -43,8 +43,9 @@ export class GameController {
         const entities = new Map();
         entities.set('field', new Field(this.fieldData));
         entities.set('dude', new Dude(Assets.get(GameConfig.DUDE.TEXTURE_DEFAULT)));
-        entities.set('endpoint', new Endpoint());
+        entities.set('endpoint', new Pointer());
         entities.set('minions', minionFabric.getMinions());
+    
         return entities;
     }
 

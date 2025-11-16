@@ -9,7 +9,7 @@ class GameConfigClass extends GameConfig {
     public CANVAS: HTMLCanvasElement;
 
     public readonly COLORS: any = {
-        BACKGROUND: 'black',
+        BACKGROUND: '#9EB8A0',
         GRID: 'green',
         DUDE: 'red',
         MINION: 'string',
@@ -19,7 +19,10 @@ class GameConfigClass extends GameConfig {
     };
 
     public readonly OBSTACLES: any = {
-        COLOR: 'blue'
+        COLOR: 'blue',
+        TEXTURES: [
+            { alias: 'obstacle_default', src: './obstacle_default.png'},
+        ]
     };
 
     public readonly ENDPOINT: any = {
@@ -32,9 +35,9 @@ class GameConfigClass extends GameConfig {
         SPAWN: { x: 0, y: 0 } as IFieldPosition,
         SIZE: this.CELL_SIZE,
         COLOR: 'green',
-        DELTA: Math.PI,
+        DELTA: Math.PI**Math.PI,
         TEXTURES: [
-            { alias: 'dude_default', src: './dude_default.png' },       
+            { alias: 'dude_default', src: './dude_default.png' },
         ],
         TEXTURE_DEFAULT: 'dude_default',
     };
@@ -54,10 +57,10 @@ class GameConfigClass extends GameConfig {
             './animal_007.png',
             './animal_008.png',
         ],
-        DENSITY: Math.LOG10E**Math.LOG10E,
+        DENSITY: Math.LOG10E ** Math.LOG10E,
     };
 
-    public readonly ALL_TEXTURES: Array<any> = this.DUDE.TEXTURES.concat(this.MINION.TEXTURES);
+    public readonly ALL_TEXTURES: Array<any> = this.DUDE.TEXTURES.concat(this.MINION.TEXTURES).concat(this.OBSTACLES.TEXTURES);
 
 
     public readonly updateSize = (w: number, h: number) => {
@@ -68,7 +71,7 @@ class GameConfigClass extends GameConfig {
 
 let gameConfig: GameConfig = new GameConfigClass();
 
-export const replaceConfig = (config: GameConfig)  => {
+export const replaceConfig = (config: GameConfig) => {
     if (config instanceof GameConfig) {
         gameConfig = config;
     }

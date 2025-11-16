@@ -2,7 +2,7 @@ import { Assets, Graphics, Sprite } from "pixi.js";
 import { IDynamicGameObject, IFieldPosition, IGlobalPosition } from "../common";
 import { GameConfig } from "../config/Config";
 
-export class Endpoint extends Sprite implements IDynamicGameObject {
+export class Pointer extends Sprite implements IDynamicGameObject {
 
 
     constructor() {
@@ -38,5 +38,3 @@ export class Endpoint extends Sprite implements IDynamicGameObject {
        // this.rotation -= Math.PI/(10 + this.rotation);
     }
 }
-
-export default Endpoint;
