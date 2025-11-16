@@ -25,6 +25,11 @@ export enum IDynamicGameObjectType {
     DUDE = 1,
     OBSTACLE = 5,
     MINION = 7,
+    MINION_ACTIVE = 8,
+};
+
+export enum WarningType {
+    LOCATION_UNAVAILABLE = 'location_unavailable',
 };
 
 export enum DynamicGameObjectState {
@@ -40,3 +45,18 @@ export interface ICell {
     type: IDynamicGameObjectType;
     object?: IDynamicGameObject;
 };
+
+export abstract class GameConfig {
+    FIELD_WIDTH: number;
+    FIELD_HEIGHT: number;
+    CELL_SIZE: number;
+    FRAME_INTERVAL: number;
+    CANVAS: HTMLCanvasElement;
+    COLORS: any;
+    OBSTACLES: any;
+    ENDPOINT: any;
+    DUDE: any;
+    MINION: any;
+    ALL_TEXTURES: Array<any>;
+    updateSize: any;
+}

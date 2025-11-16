@@ -1,17 +1,17 @@
 
 import { Application, Assets, Container, Graphics, Sprite } from 'pixi.js';
-import {  RendererConfig } from '../config/Config';
+import {  GameConfig, replaceConfig } from '../config/Config';
 import { IGlobalPosition, IFieldPosition, IDynamicGameObject, ICell, IDynamicGameObjectType } from '../common';
 import PathFinder from '../core/PathFinder';
-import Dude from '../core/Dude';
-import { getPositionsNearby, getRandomWithin, getUniquePositions, pixelsToPosition, positionToPixels } from '../core/Utils';
+
+
 import Endpoint from '../core/Endpoint';
 import GameField from '../core/FieldData';
 import UIComponents from './UIComponents';
 import Events from '../core/GameEvents';
 import { Minion } from '../core/Minion';
 import GameEvents from '../core/GameEvents';
-import MinionFabric from '../core/MinionFabric';
+import { MinionFabric } from '../core/MinionFabric';
 import Game from '../core/Game';
 
 interface IRendererConfig {
@@ -55,27 +55,29 @@ class WebGLRenderer {
 
         this.application = new Application();
 
-        await this.application.init({ background: RendererConfig.COLORS.BACKGROUND, resizeTo: window });
-
+        await this.application.init({ background: GameConfig.COLORS.BACKGROUND, resizeTo: window });
 
         this.canvas = document.getElementById("canvas");
-
-        this.canvas.appendChild(this.application.canvas);
-   
+        this.canvas.appendChild(this.application.canvas);   
         this.canvas.onpointerdown = (event) => this.handleCanvasClick(event);
 
-        this.container = new Container({ isRenderGroup: true });
-        this.container.interactive = true;
+        this.container = new Container({ isRenderGroup: true, eventMode: 'static' });        
         this.application.stage.addChild(this.container);
 
-        RendererConfig.FIELD_WIDTH = Math.floor(this.application.screen.width / RendererConfig.TILE_SIZE);
-        RendererConfig.FIELD_HEIGHT = Math.floor(this.application.screen.height / RendererConfig.TILE_SIZE);
+        GameConfig.updateSize(
+            Math.floor(this.application.screen.width / GameConfig.CELL_SIZE),
+            Math.floor(this.application.screen.height / GameConfig.CELL_SIZE));
+
+        replaceConfig(GameConfig);
+
+        await Assets.load(GameConfig.ALL_TEXTURES);
         
         return this;
     }
 
     public onEnterRenderCycle = (time: any) => {
 
+        this.entities.get('minions').forEach((minion: Minion) => minion.update());
         this.entities.get('dude').update(time);
         this.entities.get('endpoint').update();
     }

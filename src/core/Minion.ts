@@ -1,37 +1,21 @@
-import { Graphics, Sprite } from "pixi.js";
+
 import { ICell, IDynamicGameObject, IDynamicGameObjectType, IFieldPosition, IGlobalPosition } from "../common";
-import { pixelsToPosition, positionToPixels } from "./Utils";
-import { RendererConfig } from "../config/Config";
-import Events from "./GameEvents";
 
-export class Minion extends Sprite implements IDynamicGameObject {
+import { GameConfig } from "../config/Config";
+import { DynamicGameObject } from "./DynamicGameObject";
 
-    private uuid: string = crypto.randomUUID();
-    private target: IFieldPosition | null;
-    private speed: number = Math.PI;
-    private path: Array<IFieldPosition> = [];
-    private config: any;
-    private location: ICell;
+export class Minion extends DynamicGameObject implements IDynamicGameObject {
 
+    public uuid: string = crypto.randomUUID();
 
-    public get cell(): ICell | null {
-        return this.location;
-    }
+    public gridtag: string;
 
-    public set cell(cell: ICell | null) {
-        this.location = cell;
-    }
-
-    public get id() {
-        return this.constructor.name + this.uuid;
-    }
-
-    public get size() {
-        return RendererConfig.MINION.SIZE;
-    }
-
-    public get type() {
+    public override get type() {
         return IDynamicGameObjectType.MINION;
+    }
+
+    public override get delta() {
+        return GameConfig.MINION.DELTA;
     }
 
     constructor(texture: any) {
@@ -43,10 +27,14 @@ export class Minion extends Sprite implements IDynamicGameObject {
         this.x += this.size / 2;
         this.y += this.size / 2;
         this.anchor.set(0.5, 0.5);
-        this.scale.set(0.25, 0.25);    
+        this.scale.set(0.25, 0.25);
     }
 
-    public update = () => {
-
+    public override move = (d: IGlobalPosition): number => {
+        this.x += d.x;
+        this.y += d.y;
+        const r = Math.sqrt(d.x * d.x + d.y * d.y);
+        return r;
     }
+
 }

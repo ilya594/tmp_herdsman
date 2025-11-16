@@ -1,15 +1,18 @@
 import { Assets, Container } from "pixi.js";
 import { IFieldPosition, IGameRenderer } from "../common";
-import { RendererConfig } from "../config/Config";
+import { GameConfig } from "../config/Config";
 import UIComponents from "../view/UIComponents";
-import Dude from "./Dude";
+import { Dude } from "./Dude";
 import Endpoint from "./Endpoint";
 import Field from "./Field";
 import GameEvents from "./GameEvents";
 import GameField, { FieldData } from "./FieldData";
-import MinionFabric from "./MinionFabric";
+import { MinionFabric } from "./MinionFabric";
 import PathFinder from "./PathFinder";
 import { pixelsToPosition } from "./Utils";
+import { WarningType } from "../common";
+import WebGLRenderer from "../view/WebGLRenderer";
+import { Minion } from "./Minion";
 
 export class GameController {
 
@@ -17,41 +20,76 @@ export class GameController {
     private fieldData: FieldData;
     private entities: any;
 
-    constructor(renderer: IGameRenderer, fieldData: FieldData) {
-
-        this.renderer = renderer;
-
-        this.fieldData = fieldData;
-
+    constructor() {
         this.initialize();
-
     }
 
     private initialize = async () => {
 
-        const minionFabric: MinionFabric = await (new MinionFabric(this.fieldData)).initialize();
+        this.renderer = await WebGLRenderer.initialize();
 
-        this.entities = new Map();
-        this.entities.set('field', new Field(this.fieldData));
-        this.entities.set('dude', new Dude());
-        this.entities.set('endpoint', new Endpoint());
-        this.entities.set('minions', minionFabric.getMinions());
-        
+        this.fieldData = new FieldData();
+
+        this.entities = await this.initializeDynamicEntities();
+
         this.renderer.setGameEntities(this.entities);
 
         GameEvents.addEventListener(GameEvents.GAMEFIELD_POINTER_DOWN_EVENT, this.onFieldPointerDown);
+        GameEvents.addEventListener(GameEvents.GAMEOBJECT_AROUND_POSITION_SPOTTED, this.onObjectsEngaged);
     }
 
-    private onFieldPointerDown = ({ x, y }: { x: number, y: number }): void => {
+    private initializeDynamicEntities = async () => {
+        const minionFabric: MinionFabric = await (new MinionFabric(this.fieldData)).initialize();
+        const entities = new Map();
+        entities.set('field', new Field(this.fieldData));
+        entities.set('dude', new Dude(Assets.get(GameConfig.DUDE.TEXTURE_DEFAULT)));
+        entities.set('endpoint', new Endpoint());
+        entities.set('minions', minionFabric.getMinions());
+        return entities;
+    }
 
-        this.entities.get('endpoint').place({ x, y });
+    private onFieldPointerDown = (event: any): void => {
 
-        const newPosition: IFieldPosition = pixelsToPosition({ x, y }, RendererConfig.TILE_SIZE);
-        const currentPosition: IFieldPosition = pixelsToPosition(this.entities.get('dude').position, RendererConfig.TILE_SIZE);
+        this.entities.get('endpoint').place({ x: event.x, y: event.y });
 
-        const path = (new PathFinder()).findPath(this.fieldData.grid, currentPosition, newPosition, true);
+        const newPosition: IFieldPosition = pixelsToPosition({ x: event.x, y: event.y });
+        const currentPosition: IFieldPosition = pixelsToPosition(this.entities.get('dude').position);
 
-        path ? this.entities.get('dude').setPath(path) : UIComponents.matrixEffect();
+        const path: Array<any> = this.fieldData.findPath(currentPosition, newPosition);
+
+        path ? this.entities.get('dude').setPath(path) : UIComponents.showWarning(WarningType.LOCATION_UNAVAILABLE);
+    }
+
+    private onObjectsEngaged = (data: any): void => {
+
+        const neighbors = data.objects.map((object: IFieldPosition) =>
+            MinionFabric.getMinionByGridtag(this.entities.get('minions'), JSON.stringify(object)));
+
+        const approximate: any = this.entities.get('dude').position;
+        const target: IFieldPosition = pixelsToPosition(approximate);
+        //debugger;
+        
+
+        neighbors.forEach((minion: Minion) => {
+            if (!minion) {
+                debugger;
+            }
+            const current: IFieldPosition = pixelsToPosition(minion.position);      
+            const path: Array<any> = this.fieldData.findPath(current, target);            
+            
+         
+
+            //onst rest: Array<any> = this.entities.get('dude').getPath();
+            if (path?.length) {
+                minion.setPath(path);
+            }
+
+        });
+        
+
+       // this.entities.get('minions').forEach((minion: Minion) => minion.setPath(this.entities.get('dude').path));
+            
+
     }
 }
 

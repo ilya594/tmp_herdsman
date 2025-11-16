@@ -1,6 +1,6 @@
 import { Assets, Graphics, Sprite } from "pixi.js";
 import { IDynamicGameObject, IFieldPosition, IGlobalPosition } from "../common";
-import { RendererConfig } from "../config/Config";
+import { GameConfig } from "../config/Config";
 
 export class Endpoint extends Sprite implements IDynamicGameObject {
 
@@ -26,7 +26,7 @@ export class Endpoint extends Sprite implements IDynamicGameObject {
         this.scale.set(1.8, 1);
     }
 
-    public update = (delta: number = RendererConfig.ENDPOINT.DELTA): void => {
+    public update = (delta: number = GameConfig.ENDPOINT.DELTA): void => {
         if (Boolean(this.position.x + this.position.y) == false) return;
         if (this.alpha > 0) {
             this.alpha -= 0.5 / delta;

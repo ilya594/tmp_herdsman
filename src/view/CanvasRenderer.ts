@@ -1,12 +1,12 @@
 import { IFieldPosition } from "../common";
-import { RendererConfig } from "../config/Config";
+import { GameConfig } from "../config/Config";
 
 interface IRendererConfig {
     FIELD_WIDTH: number;
     FIELD_HEIGHT: number;
     FRAME_INTERVAL: number;
     CANVAS: HTMLCanvasElement;
-    TILE_SIZE: number;
+    CELL_SIZE: number;
     COLORS: {
         MINION: string;
         DUDE: string;
@@ -31,7 +31,7 @@ class CanvasRenderer {
 
     constructor(config: IRendererConfig = null) {
 
-        this.config = config || RendererConfig;
+        this.config = config || GameConfig;
 
         this.initialize();
 
@@ -78,26 +78,26 @@ class CanvasRenderer {
     private renderTargetLocation = (position: IFieldPosition): void => {
        
         const { x, y } = this.positionToPixels(position);
-        const centerX = x + this.config.TILE_SIZE / 2;
-        const centerY = y + this.config.TILE_SIZE / 2;
+        const centerX = x + this.config.CELL_SIZE / 2;
+        const centerY = y + this.config.CELL_SIZE / 2;
             this.context.fillStyle = this.config.COLORS.TARGET;
             this.context.lineWidth = 3;            
             this.context.beginPath();
-            this.context.arc(centerX, centerY, this.config.TILE_SIZE/ Math.PI, 0, 2 * Math.PI);
+            this.context.arc(centerX, centerY, this.config.CELL_SIZE/ Math.PI, 0, 2 * Math.PI);
             this.context.fill();
     }
 
     private pixelsToPosition = (x: number, y: number): IFieldPosition => {
         return {
-            x: Math.floor(x / this.config.TILE_SIZE),
-            y: Math.floor(y / this.config.TILE_SIZE)
+            x: Math.floor(x / this.config.CELL_SIZE),
+            y: Math.floor(y / this.config.CELL_SIZE)
         };
     }
 
     private positionToPixels = (position: IFieldPosition): { x: number; y: number } => {
         return {
-            x: position.x * this.config.TILE_SIZE,
-            y: position.y * this.config.TILE_SIZE
+            x: position.x * this.config.CELL_SIZE,
+            y: position.y * this.config.CELL_SIZE
         };
     }
 
@@ -122,19 +122,19 @@ class CanvasRenderer {
         this.context.strokeStyle = this.config.COLORS.GRID;
         this.context.lineWidth = 0.5;
         
-        // Вертикальные линии
+
         for (let x = 0; x < this.config.FIELD_WIDTH; x++) {
             this.context.beginPath();
-            this.context.moveTo(x * this.config.TILE_SIZE, 0);
-            this.context.lineTo(x * this.config.TILE_SIZE, this.canvas.height);
+            this.context.moveTo(x * this.config.CELL_SIZE, 0);
+            this.context.lineTo(x * this.config.CELL_SIZE, this.canvas.height);
             this.context.stroke();
         }
         
-        // Горизонтальные линии
+
         for (let y = 0; y <= this.config.FIELD_HEIGHT; y++) {
             this.context.beginPath();
-            this.context.moveTo(0, y * this.config.TILE_SIZE);
-            this.context.lineTo(this.canvas.width, y * this.config.TILE_SIZE);
+            this.context.moveTo(0, y * this.config.CELL_SIZE);
+            this.context.lineTo(this.canvas.width, y * this.config.CELL_SIZE);
             this.context.stroke();
         }
         

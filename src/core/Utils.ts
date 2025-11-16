@@ -1,13 +1,14 @@
 import { IFieldPosition, IGlobalPosition } from "../common";
+import { GameConfig } from "../config/Config";
 
-export const pixelsToPosition = (position: IGlobalPosition, size: number): IFieldPosition => {
+export const pixelsToPosition = (position: IGlobalPosition, size: number = GameConfig.CELL_SIZE): IFieldPosition => {
     return {
         x: Math.floor(position.x / size) ,
         y: Math.floor(position.y / size),
     };
 }
 
-export const positionToPixels = (position: IFieldPosition, size: number): IGlobalPosition => {
+export const positionToPixels = (position: IFieldPosition, size: number = GameConfig.CELL_SIZE): IGlobalPosition => {
     return {
         x: position.x * size + size / 2,
         y: position.y * size + size / 2,
@@ -26,20 +27,3 @@ export const getUniquePositions = (n: number, m: number, count: number, points: 
     return getUniquePositions(n, m, count, exists ? points : [...points, { x, y }]);
 };
 
-export const getPositionsNearby = (field: Array<Uint8Array>, position: IFieldPosition, type: number, radius: number = 2): Array<IFieldPosition> => {
-    const result: Array<IFieldPosition> = [];
-    const maxRadius = Math.min(radius, position.x, position.y, field[0].length - 1 - position.x, field.length - 1 - position.y);
-    for (let r = 0; r <= maxRadius; r++) {
-        for (let dx = -r; dx <= r; dx++) {
-            const dyMax = Math.floor(Math.sqrt(r * r - dx * dx));
-            for (let dy = -dyMax; dy <= dyMax; dy++) {
-                const x = position.x + dx;
-                const y = position.y + dy;
-                if (field[y][x] === type) {
-                    result.push({ x, y });
-                }
-            }
-        }
-    }
-    return result;
-};

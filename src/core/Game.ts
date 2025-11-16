@@ -1,7 +1,7 @@
 import { IGameRenderer } from '../common';
 import CanvasRenderer from '../view/CanvasRenderer';
 import WebGLRenderer from '../view/WebGLRenderer';
-import Dude from './Dude';
+
 import Events from './GameEvents';
 import GameController from './GameController';
 import { FieldData } from './FieldData';
@@ -23,11 +23,11 @@ export class Game {
 
     public initialize = async () => {        
 
-        this.renderer = await WebGLRenderer.initialize();
+      //  this.renderer = 
 
-        this.field = new FieldData();
+      //  this.field = new FieldData();
 
-        this.controller = new GameController(this.renderer, this.field);
+        this.controller = new GameController();
 
 
 

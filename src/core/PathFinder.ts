@@ -1,4 +1,4 @@
-import { IFieldPosition } from "../common";
+import { IDynamicGameObjectType, IFieldPosition } from "../common";
 
 class PathNode {
     public x: number;
@@ -18,35 +18,31 @@ class PathNode {
     }
 }
 
-class PathFinder {
+/**
+ *  Methods kindly provided by AI :)
+ */
+
+class 𓃠PathFinder {
 
     public isObstacle = (field: Uint8Array[], position: IFieldPosition): boolean => {
-        return field[position.y][position.x] > 4;
+        return field[position.y][position.x] === IDynamicGameObjectType.OBSTACLE;
+    }
+
+    private isValidPosition = (field: Uint8Array[], position: IFieldPosition): boolean => {
+        return (position.y >= 0 && position.y < field.length &&
+            position.x >= 0 && position.x < field[0].length);
     }
 
     public findPath = (field: Uint8Array[], start: IFieldPosition, target: IFieldPosition, smooth: boolean = false): IFieldPosition[] | null => {
-        // Check if start or target is out of bounds
-        //    debugger;
-        if (!this.isValidPosition(field, start.x, start.y) || !this.isValidPosition(field, target.x, target.y)) {
-            return null;
-        }
-
-        // Check if start or target is an obstacle
-        if (this.isObstacle(field, start) || this.isObstacle(field, target)) {
-            return null;
-        }
-
-        //  debugger;
+        if (this.isObstacle(field, target) || !this.isValidPosition(field, target)) return null;
 
         const openSet: PathNode[] = [];
         const closedSet = new Set<string>();
 
-        // Create start PathNode
         const startPathNode = new PathNode(start.x, start.y);
         openSet.push(startPathNode);
 
         while (openSet.length > 0) {
-            // Find PathNode with lowest f cost
             let lowestIndex = 0;
             for (let i = 1; i < openSet.length; i++) {
                 if (openSet[i].f < openSet[lowestIndex].f) {
@@ -56,9 +52,8 @@ class PathFinder {
 
             const current = openSet[lowestIndex];
 
-            // Check if we reached the target
             if (current.x === target.x && current.y === target.y) {
-                return this.smoothPath(field, this.reconstructPath(current));
+                return smooth ? this.smoothPath(field, this.reconstructPath(current)) : this.reconstructPath(current);
             }
 
             // Move current from open to closed set
@@ -76,7 +71,6 @@ class PathFinder {
                     continue;
                 }
 
-                // Calculate cost - diagonal moves cost more (sqrt(2) ≈ 1.414)
                 const isDiagonal = Math.abs(neighbor.x - current.x) + Math.abs(neighbor.y - current.y) === 2;
                 const moveCost = isDiagonal ? Math.SQRT2 : 1;
                 const tentativeG = current.g + moveCost;
@@ -105,7 +99,6 @@ class PathFinder {
                 }
             }
         }
-
         // No path found
         return null;
     }
@@ -172,7 +165,7 @@ class PathFinder {
             const newX = pathNode.x + dir.dx;
             const newY = pathNode.y + dir.dy;
 
-            if (this.isValidPosition(field, newX, newY) && field[newY][newX] === 0) {
+            if (this.isValidPosition(field, { x: newX, y: newY }) && field[newY][newX] === 0) {
                 neighbors.push(new PathNode(newX, newY));
             }
         }
@@ -180,9 +173,6 @@ class PathFinder {
         return neighbors;
     }
 
-    private isValidPosition = (field: Uint8Array[], x: number, y: number): boolean => {
-        return y >= 0 && y < field.length && x >= 0 && x < field[0].length;
-    }
 
     private heuristic = (PathNode: PathNode, target: IFieldPosition): number => {
         // Euclidean distance for diagonal movement
@@ -200,50 +190,6 @@ class PathFinder {
 
         return path;
     }
-
-    /*private smoothPath = (field: Uint8Array[], path: IFieldPosition[]): IFieldPosition[] => {
-        if (path.length <= 2) return path;
-
-        const smoothed: IFieldPosition[] = [path[0]];
-        let lastValid = 0;
-
-        for (let i = 1; i < path.length; i++) {
-            // Проверяем можно ли пройти напрямую от lastValid к i
-            if (!this.canWalkStraight(field, smoothed[smoothed.length - 1], path[i])) {
-                // Если нельзя, добавляем предыдущую точку
-                smoothed.push(path[i - 1]);
-            }
-        }
-
-        // Добавляем конечную точку
-        smoothed.push(path[path.length - 1]);
-        smoothed.shift();
-        return smoothed;
-    }
-
-    private canWalkStraight = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const distance = Math.max(Math.abs(dx), Math.abs(dy));
-
-        // Для каждого шага проверяем нет ли препятствий
-        for (let i = 1; i < distance; i++) {
-            const t = i / distance;
-            const x = Math.round(from.x + dx * t);
-            const y = Math.round(from.y + dy * t);
-
-            // Если вышли за границы или наткнулись на препятствие
-            if (y < 0 || y >= field.length || x < 0 || x >= field[0].length) {
-                return false;
-            }
-
-            if (field[y][x] !== 0) {
-                return false;
-            }
-        }
-
-        return true;
-    }*/
 
     private smoothPath = (field: Uint8Array[], path: Array<IFieldPosition>): Array<IFieldPosition> => {
         if (path.length <= 2) return path;
@@ -271,109 +217,48 @@ class PathFinder {
         return smoothed;
     }
 
-    /*private canWalkStraight = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
-        // Only allow straight horizontal or vertical smoothing
-        if (from.x !== to.x && from.y !== to.y) {
-            return false;
-        }
-
-        if (from.x === to.x) {
-            // Vertical movement
-            const minY = Math.min(from.y, to.y);
-            const maxY = Math.max(from.y, to.y);
-            for (let y = minY + 1; y < maxY; y++) {
-                if (field[y][from.x] !== 0) return false;
-            }
-        } else {
-            // Horizontal movement  
-            const minX = Math.min(from.x, to.x);
-            const maxX = Math.max(from.x, to.x);
-            for (let x = minX + 1; x < maxX; x++) {
-                if (field[from.y][x] !== 0) return false;
-            }
-        }
-
-        return true;
-    }*/
-   private canWalkStraight = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    
-    // If moving diagonally, check if both adjacent orthogonal moves are clear
-    if (dx !== 0 && dy !== 0) {
-        const canMoveHorizontally = this.checkOrthogonalLine(field, from, { x: to.x, y: from.y });
-        const canMoveVertically = this.checkOrthogonalLine(field, from, { x: from.x, y: to.y });
-        
-        // For diagonal movement, require both orthogonal paths to be clear
-        if (!canMoveHorizontally || !canMoveVertically) {
-            return false;
-        }
-    }
-    
-    // Check the straight line
-    return this.checkOrthogonalLine(field, from, to);
-}
-
-private checkOrthogonalLine = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const distance = Math.max(Math.abs(dx), Math.abs(dy));
-    
-    for (let i = 1; i < distance; i++) {
-        const t = i / distance;
-        const x = Math.round(from.x + dx * t);
-        const y = Math.round(from.y + dy * t);
-        
-        if (y < 0 || y >= field.length || x < 0 || x >= field[0].length) {
-            return false;
-        }
-        
-        if (field[y][x] !== 0) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-
-}
-
-/*public smoothPath = (path: IFieldPosition[], field: Uint8Array[]): IFieldPosition[] => {
-        if (path.length <= 2) return path;
-
-        const smoothed: IFieldPosition[] = [path[0]];
-
-        for (let i = 1; i < path.length - 1; i++) {
-            const prev = path[i - 1];
-            const current = path[i];
-            const next = path[i + 1];
-
-            // Если можно пройти напрямую от prev к next, пропускаем current
-            if (this.canWalkStraight(prev, next, field)) {
-                continue;
-            }
-            smoothed.push(current);
-        }
-
-        smoothed.push(path[path.length - 1]);
-        return smoothed;
-    }
-
-    private canWalkStraight = (from: IFieldPosition, to: IFieldPosition, field: Uint8Array[]): boolean => {
-        // Проверяем, нет ли препятствий по прямой линии
+    private canWalkStraight = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
         const dx = to.x - from.x;
         const dy = to.y - from.y;
-        const steps = Math.max(Math.abs(dx), Math.abs(dy));
 
-        for (let i = 1; i < steps; i++) {
-            const x = from.x + Math.round(dx * i / steps);
-            const y = from.y + Math.round(dy * i / steps);
-            if (this.isObstacle(field, { x, y })) return false;
+        // If moving diagonally, check if both adjacent orthogonal moves are clear
+        if (dx !== 0 && dy !== 0) {
+            const canMoveHorizontally = this.checkOrthogonalLine(field, from, { x: to.x, y: from.y });
+            const canMoveVertically = this.checkOrthogonalLine(field, from, { x: from.x, y: to.y });
+
+            // For diagonal movement, require both orthogonal paths to be clear
+            if (!canMoveHorizontally || !canMoveVertically) {
+                return false;
+            }
         }
-        debugger;
+
+        // Check the straight line
+        return this.checkOrthogonalLine(field, from, to);
+    }
+
+    private checkOrthogonalLine = (field: Uint8Array[], from: IFieldPosition, to: IFieldPosition): boolean => {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const distance = Math.max(Math.abs(dx), Math.abs(dy));
+
+        for (let i = 1; i < distance; i++) {
+            const t = i / distance;
+            const x = Math.round(from.x + dx * t);
+            const y = Math.round(from.y + dy * t);
+
+            if (y < 0 || y >= field.length || x < 0 || x >= field[0].length) {
+                return false;
+            }
+
+            if (field[y][x] !== 0) {
+                return false;
+            }
+        }
+
         return true;
-    }*/
+    }
+}
 
 
-export default PathFinder;
+
+export default 𓃠PathFinder;

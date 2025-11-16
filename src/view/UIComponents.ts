@@ -1,5 +1,9 @@
 //@ts-nocheck
+import { WarningType } from "../common";
+
 export class UIComponents {
+
+
 
     private interval: any;
     private container: HTMLElement | any;
@@ -10,6 +14,11 @@ export class UIComponents {
         this.graphics.style.display = 'none';
         this.graphics.id = 'canvas2d';
         document.body.appendChild(this.graphics);
+    }
+
+    public showWarning = (type: WarningType) => {
+        alert(type);
+        //show warning
     }
 
     public matrixEffect = () => {

@@ -1,13 +1,12 @@
-import { IFieldPosition } from "../common";
+import { IFieldPosition, GameConfig } from "../common";
 
-class RendererConfigClass {
+class GameConfigClass extends GameConfig {
 
-    public FIELD_WIDTH: number = 40;
-    public FIELD_HEIGHT: number = 40;
+    public FIELD_WIDTH: number = 100;
+    public FIELD_HEIGHT: number = 100;
     public FRAME_INTERVAL: number = 30;
-    public readonly TILE_SIZE: number = 25;
+    public readonly CELL_SIZE: number = 25;
     public CANVAS: HTMLCanvasElement;
-    public OBSTACLES_DENSITY: number = 0;
 
     public readonly COLORS: any = {
         BACKGROUND: 'black',
@@ -24,20 +23,25 @@ class RendererConfigClass {
     };
 
     public readonly ENDPOINT: any = {
-        SIZE: this.TILE_SIZE,
+        SIZE: this.CELL_SIZE,
         COLOR: 'gold',
         DELTA: Math.PI ** Math.E,
     };
 
     public readonly DUDE: any = {
         SPAWN: { x: 0, y: 0 } as IFieldPosition,
-        SIZE: this.TILE_SIZE,
+        SIZE: this.CELL_SIZE,
         COLOR: 'green',
-        DELTA: Math.PI*4,
+        DELTA: Math.PI,
+        TEXTURES: [
+            { alias: 'dude_default', src: './dude_default.png' },       
+        ],
+        TEXTURE_DEFAULT: 'dude_default',
     };
 
     public readonly MINION: any = {
-        SIZE: this.TILE_SIZE,
+        DELTA: Math.E,
+        SIZE: this.CELL_SIZE,
         COLOR: 'yellow',
         COLOR_SECONDARY: 'orange',
         TEXTURES: [
@@ -51,11 +55,24 @@ class RendererConfigClass {
             './animal_008.png',
         ],
         DENSITY: Math.LOG10E**Math.LOG10E,
-
     };
+
+    public readonly ALL_TEXTURES: Array<any> = this.DUDE.TEXTURES.concat(this.MINION.TEXTURES);
+
+
+    public readonly updateSize = (w: number, h: number) => {
+        this.FIELD_WIDTH = w;
+        this.FIELD_HEIGHT = h;
+    }
 }
 
-const RendererConfig = new RendererConfigClass();
+let gameConfig: GameConfig = new GameConfigClass();
+
+export const replaceConfig = (config: GameConfig)  => {
+    if (config instanceof GameConfig) {
+        gameConfig = config;
+    }
+}
 
 
-export { RendererConfig };
+export { gameConfig as GameConfig };
